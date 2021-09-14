@@ -7,16 +7,6 @@ server1.example.com
 [windowsserver_prod]
 server1.example.com
 
-[satops_01]
-server1.example.com
-
-[satops_02]
-server1.example.com
-
-[ovirthosts]
-#SGASTTW12R201.ast.gebgd.org
-#SGDSSPWSTG01.gebgd.org
-
 [linuxserver:vars]
 ansible_become=True
 ansible_become_method=sudo
