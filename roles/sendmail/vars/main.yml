@@ -1,0 +1,14 @@
+---
+# vars file for sendmail
+uat_report_directory: report/windows_update/UAT_win_updates_{{ ansible_date_time.date }}.csv
+prod_report_directory: report/windows_update/PROD_win_updates_{{ ansible_date_time.date }}.csv
+
+uat_count: "{{ groups['windowsserver_uat'] | length }}"
+prod_count: "{{ groups['windowsserver_prod'] | length }}"
+
+smtp_server: smtp.example.com
+smtp_port: 25
+email_from: smtpserver
+email_to: ops@example.com
+email_cc: operator1@example.com
+

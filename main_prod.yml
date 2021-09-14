@@ -1,0 +1,9 @@
+---
+- name: Win Update Install
+  vars_files: ansiblesvc_sudo.yml
+  hosts: windowsserver_prod
+  serial: "{{ prod_count  }}"
+#  strategy: free
+  roles:
+    - installupdates
+    - sendmail

@@ -1,0 +1,102 @@
+---
+- name: Search Updates
+  win_updates:
+    category_names:
+      - SecurityUpdates
+      - CriticalUpdates
+      - UpdateRollups
+      - Updates
+      - DefinitionUpdates
+      - ServicePacks
+      - Upgrades
+    state: searched
+    log_path: c:/ansible_wu.txt
+  register: searched
+  tags:
+    - uat
+    - prod
+
+- debug: var=searched
+  tags:
+    - uat
+    - prod
+
+
+- name: Install Updates
+  win_updates:
+    category_names:
+      - SecurityUpdates
+      - CriticalUpdates
+      - UpdateRollups
+      - Updates
+      - DefinitionUpdates
+      - ServicePacks
+      - Upgrades
+    state: installed
+    log_path: c:/ansible_wu.txt
+  when: searched.found_update_count > 0
+  register: installed
+  tags:
+    - uat
+    - prod
+
+- debug: var=installed
+  tags:
+    - uat
+    - prod
+
+
+- name: Output to file - UAT
+  blockinfile:
+    path: "{{ uat_report_directory }}"
+    marker: "{{ ansible_hostname }}"
+    block: |
+       InstalledCount: {{ installed.installed_update_count }}| Reboot Required after install: {{ installed.reboot_required }}
+       {% for s in installed.updates if installed.updates[s].installed %}
+       {{ ansible_hostname }}|{{ installed.updates[s].title }}|Installed|{{ansible_date_time.hour}}:{{ansible_date_time.minute}}
+       {% else %}
+       {% endfor %}
+
+    create: yes
+  delegate_to: localhost
+  when: installed.installed_update_count is defined and installed.installed_update_count > 0
+  throttle: 1
+  tags:
+    - uat
+
+
+- name: Output to file - PROD
+  blockinfile:
+    path: "{{ prod_report_directory }}"
+    marker: "{{ ansible_hostname }}"
+    block: |
+       InstalledCount: {{ installed.installed_update_count }}| Reboot Required after install: {{ installed.reboot_required }}
+       {% for s in installed.updates if installed.updates[s].installed %}
+       {{ ansible_hostname }}|{{ installed.updates[s].title }}|Installed|{{ansible_date_time.hour}}:{{ansible_date_time.minute}}
+       {% else %}
+       {% endfor %}
+
+    create: yes
+  delegate_to: localhost
+  when: installed.installed_update_count is defined and installed.installed_update_count > 0
+  throttle: 1
+  tags:
+    - prod
+
+
+- name: Reboot and wait for 30 mins
+  win_reboot:
+    pre_reboot_delay_sec: 0
+    test_command: whoami
+    reboot_timeout_sec: 1800
+  when: (installed.reboot_required is defined and installed.reboot_required == true) or searched.reboot_required == true
+  register: rebooted
+  tags:
+    - uat
+    - prod
+
+  
+- debug: var=rebooted
+  tags:
+    - uat
+    - prod

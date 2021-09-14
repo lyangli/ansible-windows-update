@@ -1,0 +1,34 @@
+---
+# tasks file for sendmail
+
+- name: Email Report - UAT
+  mail:
+   host: "{{ smtp_server }}"
+   port: "{{ smtp_port }}"
+   from: "{{ email_from }}"
+   to: "{{ email_to }}"
+   cc: "{{ email_cc }}"
+   subject: Install Windows Update - UAT
+   body: Attached is the patch installation report for {{ uat_count }} UAT servers.
+   attach: "{{ uat_report_directory }}" 
+  run_once: true
+  delegate_to: localhost
+  tags:
+    - uat
+
+
+- name: Email Report - PROD
+  mail:
+   host: "{{ smtp_server }}"
+   port: "{{ smtp_port }}"
+   from: "{{ email_from }}"
+   to: "{{ email_to }}"
+   cc: "{{ email_cc }}"   
+   subject: Install Windows Update - PROD
+   body: Attached is the patch installation report for "{{ prod_count }}" PROD servers.
+   attach: "{{ prod_report_directory }}"
+  run_once: true
+  delegate_to: localhost
+  tags:
+    - prod
+
